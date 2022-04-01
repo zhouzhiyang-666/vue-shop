@@ -25,7 +25,7 @@
           </el-table-column>
           <el-table-column label="操作" width="250" align="center">
             <template slot-scope="{row, $index}">
-              <hint-button title="添加spu" type="success" size="mini" icon="el-icon-plus" @click="addSku(row)"></hint-button>
+              <hint-button title="添加sku" type="success" size="mini" icon="el-icon-plus" @click="addSku(row)"></hint-button>
               <hint-button title="修改spu" type="warning" size="mini" icon="el-icon-edit" @click="editSpu(row)"></hint-button>
               <hint-button title="查看当前spu全部sku列表" type="info" size="mini" icon="el-icon-info" @click="seeSku(row)"></hint-button>
 
@@ -54,11 +54,11 @@
         ></el-pagination>
       </div>
 
-      <spu-form ref="spu" v-show="scene === 1" @change-secne="changeScene">
+      <spu-form ref="spu" v-show="scene === 1" @change-secne="changeSceneSpu">
         <!-- 添加|修改SPU -->
       </spu-form>
 
-      <sku-form v-show="scene === 2">
+      <sku-form ref="sku" v-show="scene === 2" @change-scene="changeSceneSku">
         <!-- 添加sku -->
       </sku-form>
     </el-card>
@@ -132,6 +132,8 @@ export default {
     // 添加Sku
     addSku(row) {
       this.scene = 2
+      console.log(this.$refs.sku)
+      this.$refs.sku.getData(this.category1Id,this.category2Id,this.category3Id,row);
     },
     // 修改spu
     editSpu(row) {
@@ -153,7 +155,7 @@ export default {
       console.log(row)
 
     },
-    changeScene(scene, isAdd) { // 0 取消 1保存
+    changeSceneSpu(scene, isAdd) { // 0 取消 1保存
       console.log(scene,isAdd)
       if (scene == 0) {
         this.scene = 0
@@ -163,6 +165,9 @@ export default {
         this.currentPage = 1
         this.getSpuList();
       }
+    },
+    changeSceneSku() {
+      this.scene = 0
     }
   }
 }
