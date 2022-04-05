@@ -77,7 +77,8 @@
           <el-table-column prop="imgName" label="名称" width="120"></el-table-column>
           <el-table-column prop="address" label="操作" show-overflow-tooltip>
             <template slot-scope="{row}">
-              <button @click="setDefaultImg(row)"></button>
+              <el-button v-if="row.isDefault == 0" type="primary" size="mini" @click="setDefaultImg(row)">设为默认</el-button>
+              <el-tag v-else type="success">默认</el-tag>
             </template>
           </el-table-column>
         </el-table>
@@ -96,25 +97,15 @@ export default {
   name: 'SkuForm',
   data() {
     return {
-      tableData: [{
-        date: '2016-05-03',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '2016-05-02',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }],
-
       spu: {},
       multipleSelection: [],
       spuImageList: [],
       spuSaleAttrList: [],
       attrInfoList: [],
-      // 收集ku信息
+      // 收集sku信息
       skuInfo: {
         category3Id: 0,
-        createTime: "2022-03-30T12:47:33.870Z",
+        createTime: new Date(),
         price: '',
         weight: "",
         spuId: 0,
@@ -161,46 +152,66 @@ export default {
       this.skuInfo.tmId = spu.tmId
       console.log('获取sku信息', category1Id, category2Id, category3Id, spu)
       // 获取图片reqSkuImageList
-      let res = await this.$API.sku.reqSkuImageList(spu.id)
+      let res = await this.$API.spu.reqSkuImageList(spu.id)
       console.log(res)
       if (res.code === 200) {
-        this.spuImageList = res.data
+        let list = res.data
+        list.forEach(item=>{
+          item.isDefault = 0
+        })
+        this.spuImageList = list
       }
       // 获取销售属性reqSpuSaleAttrList
-      let res2 = await this.$API.sku.reqSpuSaleAttrList(spu.id)
+      let res2 = await this.$API.spu.reqSpuSaleAttrList(spu.id)
       console.log(res2)
       if (res2.code === 200) {
         this.spuSaleAttrList = res2.data
       }
       // 获取商品基本信息列表reqAttrInfoList
-      let res3 = await this.$API.sku.reqAttrInfoList(category1Id, category2Id, category3Id)
+      let res3 = await this.$API.spu.reqAttrInfoList(category1Id, category2Id, category3Id)
       console.log(res3)
       if (res3.code === 200) {
         this.attrInfoList = res3.data
       }
     },
-    onSubmit() {
+    async onSubmit() {
       // 收集基本信息
+      // 整理平台属性
       this.attrInfoList.forEach(item => {
         // console.log(item.attrIdAndValueId?.split('-'));
         let [attrId, valueId] = item.attrIdAndValueId?.split('-') ?? [0, 0]
         attrId && valueId && this.skuAttrValueList.push({
-          attrId,
-          valueId
+          attrId: parseInt(attrId),
+          valueId: parseInt(valueId)
         })
       })
+      this.skuInfo.skuAttrValueList = this.skuAttrValueList
 
-      // 收集销售属性
+      // 整理销售属性
       this.spuSaleAttrList.forEach(item => {
         // console.log(item.attrIdAndValueId?.split('-'));
         let [saleAttrId, saleAttrValueId] = item.attrIdAndValueId?.split('-') ?? [0, 0]
         saleAttrId && saleAttrValueId && this.skuSaleAttrValueList.push({
-          saleAttrId,
-          saleAttrValueId,
+          // saleAttrId,
+          // saleAttrValueId,
+          saleAttrId: parseInt(saleAttrId),
+          saleAttrValueId: parseInt(saleAttrValueId),
           spuid: this.spu.id
         })
       })
+      this.skuInfo.skuSaleAttrValueList = this.skuSaleAttrValueList
+
       console.log('submit!', this.skuAttrValueList, this.skuSaleAttrValueList);
+      // 提交信息reqSaveSkuInfo
+      this.skuInfo.skuImageList = this.spuImageList
+      let res = await this.$API.spu.reqSaveSkuInfo(this.skuInfo)
+      console.log(res)
+      if (res.code === 200) {
+        this.$message.success('添加成功')
+        this.$emit('change-scene')
+      } else {
+        this.$message.success('添加失败')
+      }
     },
     cancel() {
       this.$emit('change-scene')
@@ -220,6 +231,12 @@ export default {
     // 设置默认图片
     setDefaultImg(row) {
       console.log(row)
+      this.spuImageList.forEach(item=>{
+        if(item.id != row.id) item.isDefault = 0
+      })
+      row.isDefault = 1
+      // 收集默认图片信息
+      this.skuInfo.skuDefaultImg = row.imgUrl
     }
   }
 }
