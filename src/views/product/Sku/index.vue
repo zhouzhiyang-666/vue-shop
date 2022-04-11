@@ -224,16 +224,14 @@ export default {
   line-height: 150px;
   margin: 0;
 }
-</style>
-<style>
-.el-carousel__item:nth-child(2n) {
+::v-deep .el-carousel__item:nth-child(2n) {
   background-color: #99a9bf;
 }
 
-.el-carousel__item:nth-child(2n + 1) {
+ ::v-deep .el-carousel__item:nth-child(2n + 1) {
   background-color: #d3dce6;
 }
-.el-carousel__button {
+ ::v-deep .el-carousel__button{
   width: 10px;
   height: 10px;
   background: red;

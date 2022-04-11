@@ -3,9 +3,11 @@ const { param2Obj } = require('./utils')
 
 const user = require('./user')
 const tradeMark = require('./product')
+const home = require('./home')
 
 const mocks = [
   ...user,
+  ...home,
   // ...tradeMark
 ]
 
